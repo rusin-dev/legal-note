@@ -1,22 +1,60 @@
-# This workflow will triage pull requests and apply a label based on the
-# paths that are modified in the pull request.
-#
-# To use this workflow, you will need to set up a .github/labeler.yml
-# file with configuration.  For more information, see:
-# https://github.com/actions/labeler
-
 name: Labeler
-on: [pull_request_target]
+
+on:
+  pull_request_target:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+  issues:
+    types: [opened, edited, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
 
 jobs:
   label:
-
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-
     steps:
-    - uses: actions/labeler@v4
-      with:
-        repo-token: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Checkout base branch
+        uses: actions/checkout@v4
+        if: github.event_name == 'pull_request_target'
+
+      - name: Label PR by changed files
+        if: github.event_name == 'pull_request_target'
+        uses: actions/labeler@v5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          dot: true
+
+      - name: Label by title/body (PR or Issue)
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const payload = context.payload.pull_request || context.payload.issue;
+            if (!payload) return;
+
+            const text = `${payload.title}\n${payload.body || ''}`;
+
+            const rules = [
+              { label: 'bug',           patterns: [/bug/i, /error/i, /traceback/i, /exception/i, /crash/i, /报错/i, /错误/i, /异常/i, /失败/i] },
+              { label: 'enhancement',   patterns: [/feature/i, /enhancement/i, /improvement/i, /新功能/i, /建议/i, /优化/i] },
+              { label: 'documentation', patterns: [/docs?/i, /documentation/i, /readme/i, /文档/i] },
+              { label: 'question',      patterns: [/question/i, /how to/i, /如何/i, /怎么/i, /求助/i] },
+              { label: 'help wanted',   patterns: [/help wanted/i, /need help/i, /求帮助/i] },
+              { label: 'good first issue', patterns: [/good first issue/i, /first.?time/i, /新手/i] },
+            ];
+
+            const labels = [];
+            for (const rule of rules) {
+              if (rule.patterns.some(p => p.test(text))) labels.push(rule.label);
+            }
+
+            if (labels.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: payload.number,
+                labels,
+              });
+            }
