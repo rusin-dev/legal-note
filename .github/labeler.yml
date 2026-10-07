@@ -1,0 +1,117 @@
+# ── 技术组件 ──────────────────────────────────────────
+python:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.py'
+          - 'pyproject.toml'
+          - 'requirements*.txt'
+          - 'setup.py'
+          - 'setup.cfg'
+
+gui:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/ui/**'
+          - '**/gui/**'
+          - '**/views/**'
+          - '**/widgets/**'
+          - '**/*.ui'
+          - '**/*.qss'
+
+database:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/db/**'
+          - '**/database/**'
+          - '**/models/**'
+          - '**/*.sql'
+          - '**/*.db'
+          - '**/migrations/**'
+
+ui-framework:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/pyqt/**'
+          - '**/pyside/**'
+          - '**/tkinter/**'
+          - '**/kivy/**'
+          # 如果使用了特定框架，也可以按文件内容特征匹配
+          # 但 labeler 只能按路径匹配，所以建议把框架相关文件放在统一目录下
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'pyproject.toml'
+          - 'requirements*.txt'
+          - 'poetry.lock'
+          - 'Pipfile*'
+          - 'uv.lock'
+
+ci/cd:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/**'
+          - 'Dockerfile*'
+          - 'docker-compose*'
+          - 'Makefile'
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'docs/**'
+          - '*.md'
+          - '**/*.md'
+          - 'LICENSE'
+          - 'CHANGELOG*'
+
+# ── 功能模块（按实际目录结构调整） ────────────────────
+feature/editor:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/editor/**'
+          - '**/editing/**'
+          - '**/text_editor/**'
+
+feature/search:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/search/**'
+          - '**/query/**'
+          - '**/filter/**'
+
+feature/tags:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/tags/**'
+          - '**/tagging/**'
+          - '**/labels/**'
+
+feature/export:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/export/**'
+          - '**/import/**'
+          - '**/converters/**'
+
+feature/sync:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/sync/**'
+          - '**/backup/**'
+          - '**/cloud/**'
+
+feature/settings:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/settings/**'
+          - '**/config/**'
+          - '**/preferences/**'
+
+# ── 测试相关 ──────────────────────────────────────────
+tests:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'tests/**'
+          - '**/test_*.py'
+          - '**/*_test.py'
+          - 'conftest.py'
