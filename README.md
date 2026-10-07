@@ -7,9 +7,10 @@
   <a href="https://www.python.org/">
     <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&amp;logo=python&amp;logoColor=white" alt="Python 3.10+">
   </a>
-  <a href="https://flet.dev/">
-    <img src="https://img.shields.io/badge/Flet-0.21%2B-02569B?style=for-the-badge&amp;logo=flutter&amp;logoColor=white" alt="Flet 0.21+">
-  </a>
+</p>
+
+<p align="center">
+  <b>中文</b> | <a href="docs/README.en.md">English</a>
 </p>
 
 #### What's this? | 这是什么？
