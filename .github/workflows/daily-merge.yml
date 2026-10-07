@@ -1,0 +1,68 @@
+# 每天把 dev-v1 合并进 main：能干净合并就直接推送，冲突则失败告警（不推送、不自动开 PR）。
+# 注意：GitHub 只执行默认分支（main）上定义的 schedule，所以本文件需要先合并到 main 才会定时生效。
+
+name: Daily Merge dev-v1 into main
+
+on:
+  schedule:
+    # 01:00 UTC = 北京时间 09:00
+    - cron: "0 1 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-merge-dev-v1-into-main
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Merge and push
+        env:
+          SOURCE_BRANCH: dev-v1
+          TARGET_BRANCH: main
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin "$TARGET_BRANCH" "$SOURCE_BRANCH"
+
+          if [ -z "$(git rev-list -1 "origin/$TARGET_BRANCH..origin/$SOURCE_BRANCH")" ]; then
+            echo ":white_check_mark: \`$SOURCE_BRANCH\` 无新提交，跳过合并。" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          git checkout -B "$TARGET_BRANCH" "origin/$TARGET_BRANCH"
+          old_head="$(git rev-parse HEAD)"
+
+          if ! git merge --ff-only "origin/$SOURCE_BRANCH" >/dev/null 2>&1; then
+            git merge --no-ff --no-edit "origin/$SOURCE_BRANCH" || {
+              conflicts="$(git diff --name-only --diff-filter=U)"
+              git merge --abort
+              {
+                echo ":rotating_light: \`$SOURCE_BRANCH\` -> \`$TARGET_BRANCH\` 存在冲突，本次未推送。"
+                echo ""
+                echo '```text'
+                echo "$conflicts"
+                echo '```'
+              } >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+            }
+          fi
+
+          git push origin "HEAD:$TARGET_BRANCH"
+
+          {
+            echo ":arrow_right: 已合并 \`$SOURCE_BRANCH\` -> \`$TARGET_BRANCH\`"
+            echo ""
+            git log --pretty=format:'- `%h` %s' "$old_head..HEAD"
+          } >> "$GITHUB_STEP_SUMMARY"
